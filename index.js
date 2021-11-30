@@ -120,5 +120,27 @@ inquirer.prompt(questions).then(async (answers) => {
                 });
             });
         }
+        if (c === "page") {
+            targetFilePath = path.join(
+                __dirname,
+                `${ROOT_PATH}/${dirName}`,
+                "index.js"
+            );
+            let ComponentStr = componentArr.splice(",");
+            let ComponentItemStr = "";
+            componentArr.forEach((c) => {
+                ComponentItemStr += `<${c} />\n`;
+            });
+
+            let context = templateContent
+                .replace(/componentName/g, fileName)
+                .replace("ComponentString", ComponentStr)
+                .replace("<ComponentItem/>", ComponentItemStr);
+
+            console.log(ComponentItemStr, context);
+            fs.writeFile(targetFilePath, context, (err) => {
+                if (err) console.log(err);
+            });
+        }
     });
 });
