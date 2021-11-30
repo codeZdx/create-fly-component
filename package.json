@@ -1,15 +1,18 @@
 {
-  "name": "create-fly-component",
-  "version": "1.0.0",
-  "description": "create fly react component",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://gitee.com/CodeZdx/create-fly-component.git"
-  },
-  "author": "1242022063@qq.com",
-  "license": "ISC"
+    "name": "create-fly-component",
+    "version": "1.0.0",
+    "description": "create fly react component",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://gitee.com/CodeZdx/create-fly-component.git"
+    },
+    "author": "1242022063@qq.com",
+    "license": "ISC",
+    "devDependencies": {
+        "inquirer": "^8.2.0"
+    }
 }
