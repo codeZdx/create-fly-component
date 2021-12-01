@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 //#region 模块引入及交互配置项
 const inquirer = require("inquirer");
 const fs = require("fs");

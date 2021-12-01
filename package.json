@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "description": "create fly react component",
     "main": "index.js",
+    "bin": {
+        "create-fly-component": "index.js"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "node ./index.js"
