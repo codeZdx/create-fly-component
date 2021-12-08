@@ -17,9 +17,12 @@
     "author": "1242022063@qq.com",
     "license": "ISC",
     "devDependencies": {
+        "chalk": "^4.0.0",
         "inquirer": "^8.2.0"
     },
     "dependencies": {
-        "inquirer": "^8.2.0"
+        "chalk": "^4.0.0",
+        "inquirer": "^8.2.0",
+        "ora": "^5.0.0"
     }
 }

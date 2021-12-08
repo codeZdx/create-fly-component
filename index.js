@@ -3,6 +3,10 @@
 const inquirer = require("inquirer");
 const fs = require("fs");
 const path = require("path");
+const chalk = require("chalk");
+
+const ora = require("ora");
+const spinner = ora("waiting...");
 
 const TEMPLATE_PATH = __dirname + "/template"; // 我们的模版文件夹路径
 const ROOT_PATH = process.cwd(); //根目录
@@ -24,6 +28,12 @@ const questions = [
         type: "input",
         name: "path",
         message: "Please enter your component path ( /src/... ):",
+    },
+    {
+        type: "list",
+        name: "Project",
+        message: "Which project component do you want to create ?",
+        choices: ["FLY", "S9"],
     },
     {
         type: "list",
@@ -53,10 +63,12 @@ const questions = [
 //#endregion
 
 inquirer.prompt(questions).then(async (answers) => {
+    spinner.start();
     // #region 创建工作开始前进行校验
     // 组件名称必填
     if (answers.name === "") {
-        console.log("Please enter your component name !");
+        spinner.stop();
+        console.log(chalk.yellow("Please enter your component name !"));
         return;
     }
     // 创建目录地址，没有输入则默认根目录
@@ -66,25 +78,38 @@ inquirer.prompt(questions).then(async (answers) => {
     const firstLetter = componentName.slice(0, 1);
     const dirName = firstLetter.toLowerCase() + componentName.slice(1); // 文件夹
     const fileName = firstLetter.toUpperCase() + componentName.slice(1); // 组件
+    // 区分FLY/S9，若是S9，组件以fileName+Search等命名
+    const isFly = answers.Project === "FLY";
     // modules模版内容
     let componentArr = [],
         importStr = "",
         ComponentItemStr = "";
     for (let key in answers) {
         if (answers[key] === "Y") {
-            componentArr.push(key);
-            importStr += `import ${key} from './${key}'\n`;
-            ComponentItemStr += `<${key} />`;
+            componentArr.push(isFly ? key : fileName + key);
+            importStr += `import ${
+                isFly ? key : fileName + key
+            } from './${key}'\n`;
+            ComponentItemStr += `<${isFly ? key : fileName + key} />`;
         }
     }
     // 判断是否存在同名文件夹
     const componentDirPath = path.join(ROOT_PATH, PAGE_PATH, dirName);
     if (fs.existsSync(componentDirPath)) {
-        console.log("This componentPath has already been existed !");
+        spinner.stop();
+        console.log(
+            chalk.yellow("This componentPath has already been existed !")
+        );
         return;
     }
     // 创建目标文件夹
-    fs.mkdirSync(componentDirPath);
+    try {
+        fs.mkdirSync(componentDirPath);
+    } catch (err) {
+        spinner.stop();
+        console.log(chalk.red(err));
+        return;
+    }
     // #endregion
 
     // #region 处理actions、stores文件
@@ -96,19 +121,29 @@ inquirer.prompt(questions).then(async (answers) => {
             path.join(__dirname, `/template/${c}.js`),
             "utf8"
         );
+        const s9ActionName = c === "actions" ? "Actions" : "Stores";
         let actionsDirPath = path.join(ROOT_PATH, `${PAGE_PATH}/${dirName}`, c);
         let actionsFilePath = path.join(
             ROOT_PATH,
             `${PAGE_PATH}/${dirName}/${c}`,
-            "index.js"
+            isFly ? "index.js" : `${fileName + s9ActionName}.js`
         );
         if (!fs.existsSync(actionsDirPath)) {
-            fs.mkdirSync(actionsDirPath); // 创建文件夹
+            try {
+                fs.mkdirSync(actionsDirPath); // 创建文件夹
+            } catch (err) {
+                spinner.stop();
+                console.log(chalk.red(err));
+                return;
+            }
             // 替换输入的组件名称
             actionsContent = actionsContent.replace(/componentName/g, fileName);
             // 写入文件夹中的index.js文件
             fs.writeFile(actionsFilePath, actionsContent, (err) => {
-                if (err) console.log(err);
+                if (err) {
+                    spinner.stop();
+                    console.log(chalk.red(err));
+                }
             });
         }
     });
@@ -121,7 +156,14 @@ inquirer.prompt(questions).then(async (answers) => {
         "modules"
     );
     if (!fs.existsSync(itemDirPath)) {
-        fs.mkdirSync(itemDirPath);
+        try {
+            fs.mkdirSync(itemDirPath);
+        } catch (err) {
+            spinner.stop();
+            console.log(chalk.red(err));
+            return;
+        }
+
         let itemContent = fs.readFileSync(
             path.join(__dirname, `/template/item.js`),
             "utf8"
@@ -138,7 +180,10 @@ inquirer.prompt(questions).then(async (answers) => {
                 .replace(/componentItem/g, d);
 
             fs.writeFile(itemFilePath, context, (err) => {
-                if (err) console.log(err);
+                if (err) {
+                    spinner.stop();
+                    console.log(chalk.red(err));
+                }
             });
         });
     }
@@ -162,7 +207,10 @@ inquirer.prompt(questions).then(async (answers) => {
         .replace("importString", importStr)
         .replace("exportString", exportStr);
     fs.writeFile(componentFilePath, templateContext, (err) => {
-        if (err) console.log(err);
+        if (err) {
+            spinner.stop();
+            console.log(chalk.red(err));
+        }
     });
     // 处理page组件
     let pageFilePath = path.join(
@@ -179,7 +227,14 @@ inquirer.prompt(questions).then(async (answers) => {
         .replace("ComponentString", ComponentStr)
         .replace("<ComponentItem />", ComponentItemStr);
     fs.writeFile(pageFilePath, pageContext, (err) => {
-        if (err) console.log(err);
+        if (err) {
+            spinner.stop();
+            console.log(chalk.red(err));
+        }
     });
+    setTimeout(() => {
+        spinner.stop();
+        console.log(chalk.green("You have created it successfully !"));
+    }, 1000);
     // #endregion
 });
