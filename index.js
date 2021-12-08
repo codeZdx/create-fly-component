@@ -60,6 +60,99 @@ const questions = [
         choices: ["Y", "N"],
     },
 ];
+// 模板内容
+const actionsContent = `import Reflux from "reflux";
+import PostJSON from "utils/ajax/postJSON";
+const componentNameActions = Reflux.createActions({
+    search: { asyncResult: true },
+});
+componentNameActions.search.listen(function (so) {
+    PostJSON("", so).then(this.completed, this.failed);
+});
+export default componentNameActions;`;
+const storesContent = `import Reflux from "reflux";
+import StateMixin from "reflux-state-mixin";
+import { message } from "antd";
+import componentNameActions from "../actions";
+const componentNameStore = Reflux.createStore({
+    mixins: [StateMixin.store],
+    listenables: componentNameActions,
+    getInitialState: function () {
+        return {
+            loading: false,
+            so: {},
+            dataSource: [],
+            pageSize: 10,
+            currentPage: 1,
+            totalSize: 0,
+        };
+    },
+    onSearch(so) {
+        this.setState({ so, loading: true });
+    },
+    onSearchCompleted(result) {
+        let volist = [];
+        let totalSize = 0;
+        if (result.success) {
+            volist = result.data || result.voList;
+            if (!isArray(volist)) {
+                volist = [];
+            }
+            totalSize = result.count || result.total;
+        } else {
+            message.error("查询失败:"+result.message);
+            volist = [];
+            totalSize = 0;
+        }
+        this.setState({
+            loading: false,
+            dataSource: volist,
+            totalSize,
+        });
+    },
+    onSearchFailed(error) {
+        message.error("调用失败:" + error.status);
+        this.setState({ loading: false, dataSource: [] });
+    },
+});
+export default componentNameStore;
+`;
+const itemContent = `import React, { Component } from "react";
+import ReactMixin from "react-mixin";
+import StateMixin from "reflux-state-mixin";
+import { Form } from "antd";
+import componentNameActions from "../actions";
+import componentNameStore from "../stores";
+class componentItem extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+    render() {
+        return <div></div>;
+    }
+}
+export default Form.create()(
+    ReactMixin.onClass(componentItem, StateMixin.connect(componentNameStore))
+);`;
+const pageContent = `import React, { Component } from "react";
+import { ComponentString } from "./modules";
+class componentName extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+    render() {
+        return (
+            <div id="componentName">
+                <ComponentItem />
+            </div>
+        );
+    }
+}
+module.exports = componentName;`;
+const templateContent = `importString;
+exportString;`;
 //#endregion
 
 inquirer.prompt(questions).then(async (answers) => {
@@ -117,10 +210,6 @@ inquirer.prompt(questions).then(async (answers) => {
         (c) => c === "actions" || c === "stores"
     );
     actionsArr.forEach((c) => {
-        let actionsContent = fs.readFileSync(
-            path.join(__dirname, `/template/${c}.js`),
-            "utf8"
-        );
         const s9ActionName = c === "actions" ? "Actions" : "Stores";
         let actionsDirPath = path.join(ROOT_PATH, `${PAGE_PATH}/${dirName}`, c);
         let actionsFilePath = path.join(
@@ -137,9 +226,12 @@ inquirer.prompt(questions).then(async (answers) => {
                 return;
             }
             // 替换输入的组件名称
-            actionsContent = actionsContent.replace(/componentName/g, fileName);
+            let actionsContext =
+                c === "actions"
+                    ? actionsContent.replace(/componentName/g, fileName)
+                    : storesContent.replace(/componentName/g, fileName);
             // 写入文件夹中的index.js文件
-            fs.writeFile(actionsFilePath, actionsContent, (err) => {
+            fs.writeFile(actionsFilePath, actionsContext, (err) => {
                 if (err) {
                     spinner.stop();
                     console.log(chalk.red(err));
@@ -164,10 +256,6 @@ inquirer.prompt(questions).then(async (answers) => {
             return;
         }
 
-        let itemContent = fs.readFileSync(
-            path.join(__dirname, `/template/item.js`),
-            "utf8"
-        );
         componentArr.forEach((d) => {
             let itemFilePath = path.join(
                 ROOT_PATH,
@@ -199,10 +287,6 @@ inquirer.prompt(questions).then(async (answers) => {
         `${PAGE_PATH}/${dirName}/modules`,
         "index.js"
     );
-    let templateContent = fs.readFileSync(
-        path.join(__dirname, `/template/component.js`),
-        "utf8"
-    );
     let templateContext = templateContent
         .replace("importString", importStr)
         .replace("exportString", exportStr);
@@ -217,10 +301,6 @@ inquirer.prompt(questions).then(async (answers) => {
         ROOT_PATH,
         `${PAGE_PATH}/${dirName}`,
         "index.js"
-    );
-    let pageContent = fs.readFileSync(
-        path.join(__dirname, `/template/page.js`),
-        "utf8"
     );
     let pageContext = pageContent
         .replace(/componentName/g, fileName)
