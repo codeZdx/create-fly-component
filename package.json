@@ -2,13 +2,14 @@
     "name": "create-fly-component",
     "version": "1.0.2",
     "description": "create fly react component",
-    "main": "index.js",
+    "main": "./index.js",
     "bin": {
         "create-fly-component": "index.js"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "node ./index.js"
+        "dev": "node ./index.js",
+        "build": "webpack"
     },
     "repository": {
         "type": "git",
@@ -17,11 +18,14 @@
     "author": "1242022063@qq.com",
     "license": "ISC",
     "devDependencies": {
-        "chalk": "^4.0.0",
-        "inquirer": "^8.2.0"
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1"
     },
     "dependencies": {
+        "@babel/core": "^7.16.0",
+        "babel-loader": "^8.2.3",
         "chalk": "^4.0.0",
+        "clean-webpack-plugin": "^4.0.0",
         "inquirer": "^8.2.0",
         "ora": "^5.0.0"
     }

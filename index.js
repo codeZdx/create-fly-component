@@ -8,15 +8,7 @@ const chalk = require("chalk");
 const ora = require("ora");
 const spinner = ora("waiting...");
 
-const TEMPLATE_PATH = __dirname + "/template"; // 我们的模版文件夹路径
 const ROOT_PATH = process.cwd(); //根目录
-// 获取模版list
-function getTemplateList() {
-    const response = fs.readdirSync(TEMPLATE_PATH);
-    return response.map((item) => {
-        return item.substring(0, item.lastIndexOf("."));
-    });
-}
 const questions = [
     {
         type: "input",
@@ -206,10 +198,7 @@ inquirer.prompt(questions).then(async (answers) => {
     // #endregion
 
     // #region 处理actions、stores文件
-    let actionsArr = getTemplateList().filter(
-        (c) => c === "actions" || c === "stores"
-    );
-    actionsArr.forEach((c) => {
+    ["actions", "stores"].forEach((c) => {
         const s9ActionName = c === "actions" ? "Actions" : "Stores";
         let actionsDirPath = path.join(ROOT_PATH, `${PAGE_PATH}/${dirName}`, c);
         let actionsFilePath = path.join(
