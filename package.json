@@ -1,6 +1,6 @@
 {
     "name": "create-fly-component",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "create fly react component",
     "main": "./index.js",
     "bin": {

@@ -63,7 +63,7 @@ const enterItems = [
 ];
 //#endregion
 commander
-    .version("1.0.8", "-v --version")
+    .version("1.0.9", "-v --version")
     .arguments("<init>")
     .action(() => {
         inquirer.prompt(enterItems).then(async (res) => {
