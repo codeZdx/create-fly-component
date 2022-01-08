@@ -23,7 +23,6 @@ const enterItems = [
         type: "input",
         name: "name",
         message: "Please enter your component name :",
-        require: true,
     },
     {
         type: "input",
